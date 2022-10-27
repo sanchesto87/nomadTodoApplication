@@ -1,9 +1,10 @@
 import {StatusBar} from 'expo-status-bar';
 import React, {useEffect, useState} from "react";
-import {StyleSheet, Text, View, TouchableOpacity, TextInput, ScrollView} from 'react-native';
+import {Platform, Alert, StyleSheet, Text, View, TouchableOpacity, TextInput, ScrollView} from 'react-native';
 import {theme} from "./color";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import {Fontisto} from '@expo/vector-icons';
+// icons.expo.fyi
 const STORAGE_KEY = "@toDos";
 
 export default function App() {
@@ -33,11 +34,30 @@ export default function App() {
         await saveTodo(newToDos);
         setText("");
     };
-    const delTodo = async(key) => {
-        const newToDos = {...toDos};
-        delete newToDos[key];
-        setToDos(newToDos);
-        await saveTodo(newToDos);
+    const delTodo = async (key) => {
+        if (Platform.OS === "web") {
+            const ok = confirm("Do you want delete this To Do ?");
+            if (ok) {
+                const newToDos = {...toDos};
+                delete newToDos[key];
+                setToDos(newToDos);
+                saveTodo(newToDos);
+            }
+        } else {
+            Alert.alert("Delete To Do", "Are you sere?", [
+                {text: "Cancel", style: "cancel"},
+                {
+                    text: "Ok",
+                    style: "destructive",
+                    onPress: () => {
+                        const newToDos = {...toDos};
+                        delete newToDos[key];
+                        setToDos(newToDos);
+                        saveTodo(newToDos);
+                    }
+                }
+            ]);
+        }
     }
     console.log(toDos);
 
@@ -65,9 +85,17 @@ export default function App() {
                         toDos[key].working === working ?
                             <View style={styles.toDo} key={key}>
                                 <Text style={styles.toDoText}>{toDos[key].text}</Text>
-                                <TouchableOpacity onPress={()=> delTodo(key)}>
-                                    <Text>X</Text>
-                                </TouchableOpacity>
+                                <View style={styles.btnView}>
+                                    <TouchableOpacity style={styles.btn} onPress={() => delTodo(key)}>
+                                        <Fontisto name="trash" size={20} color="white"/>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={styles.btn} onPress={() => delTodo(key)}>
+                                        <Fontisto name="trash" size={20} color="white"/>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={styles.btn} onPress={() => delTodo(key)}>
+                                        <Fontisto name="trash" size={20} color="white"/>
+                                    </TouchableOpacity>
+                                </View>
                             </View>
                             : null
                     ))}
@@ -117,5 +145,12 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: "500"
     },
-
+    btnView: {
+        flexDirection: "row",
+        justifyContent: "flex-end",
+        marginRight: -30,
+    },
+    btn: {
+      paddingHorizontal: 10,
+    },
 });
